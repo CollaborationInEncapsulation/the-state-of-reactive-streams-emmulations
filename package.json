@@ -1,0 +1,29 @@
+{
+  "name": "state-of-reactive-streams-animations",
+  "version": "1.0.0",
+  "description": "_A Pen created at CodePen.io. Original URL: [https://codepen.io/fobabett/pen/GmXzVX](https://codepen.io/fobabett/pen/GmXzVX).",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "npm run build",
+    "build": "webpack",
+    "start:dev": "webpack-dev-server"
+  },
+  "author": "Oleh Dokuka",
+  "license": "MIT",
+  "dependencies": {
+    "animejs": "^3.1.0",
+    "@types/animejs": "^2.0.2",
+    "jquery": "3.4.1",
+    "@types/jquery": "3.3.1",
+    "rxjs": "6.5.2"
+  },
+  "devDependencies": {
+    "webpack": "^4.35.2",
+    "webpack-dev-server": "^3.7.2",
+    "webpack-cli": "3.3.6",
+    "html-webpack-plugin": "^3.2.0",
+    "copy-webpack-plugin": "5.0.3",
+    "ts-loader": "6.0.4",
+    "typescript": "3.4.3"
+  }
+}

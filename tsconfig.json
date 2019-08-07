@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "outDir": "./dist/",
+      "noImplicitAny": true,
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "target": "es5",
+      "downlevelIteration": true,
+      "allowJs": false,
+      "rootDir": "",
+      "lib": [
+        "es6",
+        "scripthost",
+        "dom"
+      ]
+    },
+    "include": [
+      "./src/**/*"
+    ],
+    "exclude": [
+      "./dist"
+    ]
+  }

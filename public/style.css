@@ -19,7 +19,9 @@ body {
 .server {
   float: right;
 }
-
+.request {
+  opacity: 0;
+}
 .el {
   background: #FFFFFF;
   width: 20px;
@@ -53,14 +55,23 @@ body {
   justify-content: center;
   text-align: center;
 }
+.statistic {
+  position: absolute;
+  height: 100%;
+}
+
+.statistic > * {
+  margin-bottom: 15px;
+}
 
 .timer {
   width: 100px;
   height: 100px;
-  position: absolute;
+  position: relative;
   border-radius: 50px;
   background: white;
   display: block;
+  margin-right: 4px;
 }
 
 .timer > .timer-face {
@@ -74,4 +85,124 @@ body {
   color: white;
   text-align: center;
   line-height: 70px;
+}
+
+.memory {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  width: 184px;
+  background-color: black;
+  border-color: white;
+  border-width: 2px;
+  border-style: solid;
+  color: #ffffff;
+}
+
+.memory > .memory-indicator {
+  display: flex;
+  background-color: white;
+  width: 4px;
+  height: 36px;
+  margin: 2px;
+}
+
+.memory-label {
+  color: #FFFFFF;
+  margin-bottom: 0 !important;
+}
+
+.elements-counter {
+  color: #FFFFFF;
+  align-self: flex-end;
+  position: absolute;
+  bottom: 0;
+}
+
+.control-panel {
+  display: inline-flex;
+  flex-direction: row;
+  align-content: flex-start;
+  align-items: center;
+  border-color: #FFFFFF;
+  border-style: solid;
+  border-width: 2px;
+  padding: 5px;
+  /* margin: auto; */
+  top: 10px;
+}
+
+.control-button {
+  display: block;
+  width: 70px;
+  height: 70px;
+}
+
+.control-button > .circle {
+	transition: stroke-dashoffset 300ms ease-in;
+	stroke-dashoffset: 0;
+	fill: none;
+}
+.control-button[state = 'pause'] > .circle {
+	stroke-dashoffset: 314;
+}
+
+
+input[type="range"]{
+  -webkit-appearance:none;
+  width:160px;
+  height:20px;
+  background: linear-gradient(to right, #ffffff 0%, #ffffff 100%);
+  background-size:150px 10px;
+  background-position:center;
+  background-repeat:no-repeat;
+  overflow:hidden;
+  outline: none;
+}
+
+.speedometer-label {
+  color: #FFFFFF;
+}
+
+input[type="range"] {
+  margin-bottom: 50px !important;
+}
+
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:20px;
+  height:20px;
+  background:#000000;
+	border-color: #ffffff;
+  border-style: solid;
+	border-width: 1px;
+  position:relative;
+  z-index:3;
+  box-shadow:0 0 5px 0 rgba(0,0,0,0.3);
+}
+
+input[type="range"]::-webkit-slider-thumb:after{
+  content:" ";
+  width:160px;
+  height:10px;
+  position:absolute;
+  z-index:1;
+  right:20px;
+  top:5px;
+  background: #ffffff;
+  background: linear-gradient(to right, #f088fc 1%, #AC6CFF 70%);
+}
+
+
+/*-------------------*/
+
+.box {
+  width: 100px;
+  background-color: #FFFFFF;
+  height: 100px;
+  position: absolute;
+
+  left: 300px;
+  top: 300px;
 }

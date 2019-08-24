@@ -1,9 +1,10 @@
 import * as $ from 'jquery';
-import { of, range, race, concat, merge } from 'rxjs'
-import { flatMap, take, } from 'rxjs/operators'
-import { requestAnimation, server, responseContent, request, startTimer, awaitAnimation, modelAnimation, peekAnimation, filterAnimation, responseAnimation } from './common';
-
-
+import { of, range, race, concat, merge, defer } from 'rxjs'
+import { flatMap, take, tap, } from 'rxjs/operators'
+import { requestAnimation, awaitAnimation, modelAnimation, responseAnimation, peekAnimation, filterAnimation, } from './common/animations';
+import { request, server, responseContent } from './common/elements';
+import { startTimer, increaseMemoryUsage, decreaseMemoryUsage, increaseProcessedElementsCount } from './common/statistic';
+import { ELEMENTS_TO_FIND, NETWORK_THROUGHPUT, ELEMENTS_COUNT } from './common/constants';
 
 
 const runnableAction = () => {
@@ -13,7 +14,7 @@ const runnableAction = () => {
     requestAnimation(request[0]),
     race(
       awaitAnimation(server.toArray()),
-      range(0, 50).pipe(
+      range(0, ELEMENTS_COUNT).pipe(
         flatMap(() => {
           const el = $('<div class="stretched el"></div>').appendTo(responseContent)[0];
 
@@ -21,25 +22,32 @@ const runnableAction = () => {
         }, 1),
       )
     ).pipe(
-      flatMap((el) => concat(responseAnimation(el), of(el)), 25),
+      flatMap((el) => concat(responseAnimation(el), of(el)), NETWORK_THROUGHPUT),
+      tap((e) => {
+        increaseMemoryUsage()
+      }),
       flatMap(el => {
         const shouldFilter = Math.random() >= 0.5;
 
         if (shouldFilter) {
-          return merge(
-            peekAnimation(el),
-            filterAnimation(el)
+          return concat(
+            merge(
+              peekAnimation(el),
+              filterAnimation(el),
+            ),
+            defer(decreaseMemoryUsage),
           );
         } else {
           return concat(
             peekAnimation(el),
+            defer(decreaseMemoryUsage),
             of(el)
           );
         }
-      }, 2),
-      take(10),
+      }, 1),
+      take(ELEMENTS_TO_FIND),
     ),
-  ).subscribe(null, null, timerStopper);
+  ).subscribe(increaseProcessedElementsCount, timerStopper, timerStopper);
 }
 
 export default runnableAction;

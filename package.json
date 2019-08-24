@@ -15,7 +15,8 @@
     "@types/animejs": "^2.0.2",
     "jquery": "3.4.1",
     "@types/jquery": "3.3.1",
-    "rxjs": "6.5.2"
+    "rxjs": "6.5.2",
+    "reactor-core-js": "0.5.0"
   },
   "devDependencies": {
     "webpack": "^4.35.2",

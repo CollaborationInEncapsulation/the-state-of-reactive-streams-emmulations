@@ -1,39 +1,47 @@
 import anime from 'animejs';
-import * as $ from 'jquery';
-import { from, defer, } from 'rxjs'
-import { repeat, ignoreElements, } from 'rxjs/operators'
-
+import { defer, } from 'rxjs';
+import { repeat, ignoreElements, } from 'rxjs/operators';
+import { NETWORK_LATENCY, ELEMENT_PROCESSING_TIME, ELEMENT_LOOKUP_TIME } from './constants';
 
 export type AnimeTarget = string | object | HTMLElement | SVGElement | NodeList | null;
-
 
 export const loop = false;
 export const easing = 'linear';
 export const direction = 'alternate';
-export const timerFace = $('.timer>.timer-face')
-export const client = $('.client')
-export const server = $('.server')
-export const container = $('.container');
-export const request = $('.request');
-export const responseContent = $('.response-content');
 
-export const requestAnimation = (element: AnimeTarget) =>
-    from(anime({
-        targets: element,
-        translateX: 470,
-        easing,
-        loop,
-        direction
-    }).finished).pipe(ignoreElements())
+export const requestAnimation = (element: AnimeTarget) => {
+    return defer(() => 
+        anime.timeline({
+                targets: element,
+                easing,
+                loop,
+                direction
+            } as any)
+            .add({
+                opacity: 1,
+                duration: 50,
+            } as any)
+            .add({
+                translateX: 470,
+                duration: NETWORK_LATENCY - 50 - 1,
+            } as any)
+            .add({
+                opacity: 0,
+                translateX: 0,
+                duration: 1,
+            } as any)
+            .finished
+    ).pipe(ignoreElements())
+}
 
 export const modelAnimation = (element: AnimeTarget) =>
-    from(anime({
+    defer(() => anime({
         targets: element,
         opacity: 1,
         easing,
         loop,
         direction,
-        duration: 40
+        duration: ELEMENT_LOOKUP_TIME
     }).finished).pipe(ignoreElements())
 
 export const awaitAnimation = (element: AnimeTarget) =>
@@ -53,52 +61,55 @@ export const awaitAnimation = (element: AnimeTarget) =>
     }).finished).pipe(ignoreElements(), repeat())
 
 export const filterAnimation = (element: AnimeTarget) =>
-    from(anime({
+    defer(() => anime({
         targets: element,
         easing,
         loop,
         direction,
-        duration: 40,
+        duration: ELEMENT_PROCESSING_TIME,
         opacity: 0,
     }).finished).pipe(ignoreElements())
 
 export const peekAnimation = (element: AnimeTarget) =>
-    from(
+    defer(() => 
         anime
             .timeline({
                 targets: element,
                 easing,
                 loop,
                 direction,
-                duration: 40,
+                duration: ELEMENT_PROCESSING_TIME,
             } as any)
             .add({
-                scale: 2
+                scaleX: 5
             } as any)
             .add({
-                scale: 1
+                scaleX: 1
             } as any)
             .finished
     ).pipe(ignoreElements())
 
 export const responseAnimation = (element: AnimeTarget) =>
-    from(anime({
+    defer(() => anime({
         targets: element,
         translateX: -470,
         easing,
         loop,
         direction,
-        duration: 1000
+        duration: NETWORK_LATENCY
     }).finished).pipe(ignoreElements())
 
-export const startTimer = () => {
-    let counter = 0;
-    const ref = setInterval(() => timerFace.text(++counter), 1000);
-
-    timerFace.text("0");
-
-    return () => {
-        anime.running.forEach(v => v.pause());
-        clearInterval(ref);
-    }
+export const pauseAnimations = () => {
+    (anime as any).paused = [...anime.running];
+    (anime as any).isPaused = true;
+    anime.running.forEach(a => a.pause());
 }
+
+export const playAnimations = () => {
+    (anime as any).isPaused = false;
+    ((anime as any).paused || []).forEach((a: anime.AnimeInstance) => a.play());
+    (anime as any).paused = [];
+}
+
+export const changeAnimationSpeed = (speed: number) => anime.speed = speed;
+

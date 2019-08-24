@@ -6,6 +6,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 module.exports = {
     entry: './src/index.ts',
     mode: 'development',
+    devtool: 'source-map',
     devServer: {
         contentBase: path.join(__dirname, 'dist'),
         compress: true,

@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "animejs": "^3.1.0",
-    "@types/animejs": "^2.0.2",
+    "@types/animejs": "^3.1.0",
     "jquery": "3.4.1",
     "@types/jquery": "3.3.1",
     "rxjs": "6.5.2",

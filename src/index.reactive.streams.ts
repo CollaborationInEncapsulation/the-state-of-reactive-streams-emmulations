@@ -101,10 +101,10 @@ class DeliverRequestAnimationSubscriber implements Subscriber<Object>, Subscript
 
   private s: Subscription;
   private requests = request.toArray();
-  private animation = defer(() => {
+  private animation = (n: number) => {
     const el = this.requests.shift();
-    return requestAnimation(el).pipe(tap(null, null, () => this.requests.unshift(el)));
-  });
+    return requestAnimation(el, n).pipe(tap(null, null, () => this.requests.unshift(el)));
+  };
 
   constructor(private actual: Subscriber<Object>) { }
 
@@ -122,7 +122,7 @@ class DeliverRequestAnimationSubscriber implements Subscriber<Object>, Subscript
     this.actual.onComplete();
   }
   request(n: number): void {
-    this.animation.subscribe({
+    this.animation(n).subscribe({
       complete: () => this.s.request(n)
     })
   }

@@ -29,10 +29,20 @@ class ObservablePublisher<T> implements Subscribable<T>, InteropObservable<T>{
         this._source.subscribe(
             new PartialSubscriberAdapter(
                 (value: T) => {
+                    if (subscriber && subscriber.closed) {
+                        unsubscribe.unsubscribe();
+                        return;
+                    }
                     if (!unsubscribe.isCanceled()) {
                         if (subscriber && subscriber.next) {
                             try {
                                 subscriber.next(value);
+
+                                if (subscriber.closed) {
+                                    unsubscribe.unsubscribe();
+                                    return;
+                                }
+
                                 // Only if someone specified a batch size
                                 if (this._batchSize < Number.MAX_SAFE_INTEGER) {
                                     this._buffered--;

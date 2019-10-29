@@ -21,6 +21,8 @@ body {
 }
 .request {
   opacity: 0;
+  color: #000000;
+  text-align: center;
 }
 .el {
   background: #FFFFFF;

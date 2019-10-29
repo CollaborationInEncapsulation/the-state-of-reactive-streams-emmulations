@@ -9,9 +9,13 @@ export const loop = false;
 export const easing = 'linear';
 export const direction = 'alternate';
 
-export const requestAnimation = (element: AnimeTarget) => {
-    return defer(() => 
-        anime.timeline({
+export const requestAnimation = (element: AnimeTarget, n?: number) => {
+    return defer(() => {
+        if (n && element instanceof HTMLElement) {
+            element.innerText = n + "";
+        }
+        
+        return anime.timeline({
                 targets: element,
                 easing,
                 loop,
@@ -30,8 +34,8 @@ export const requestAnimation = (element: AnimeTarget) => {
                 translateX: 0,
                 duration: 1,
             } as any)
-            .finished
-    ).pipe(ignoreElements())
+            .finished;
+        }).pipe(ignoreElements())
 }
 
 export const modelAnimation = (element: AnimeTarget) =>
@@ -111,5 +115,5 @@ export const playAnimations = () => {
     (anime as any).paused = [];
 }
 
-export const changeAnimationSpeed = (speed: number) => anime.speed = speed;
+export const changeAnimationSpeed = (speed: number) => (anime as any).speed = speed;
 

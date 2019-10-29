@@ -38,13 +38,13 @@ const runnableAction = () => {
                 onMouseDown(event);
             } else if (event.type == 'mousemove') {
                 onMouseMove(event);
-             }else if (event.type == 'mouseup') {
+            } else if (event.type == 'mouseup') {
                 onMouseUp(event);
             }
         }
 
         events.length = 0;
-    }, 200);
+    }, 500);
 }
 
 export default runnableAction;

@@ -1,6 +1,6 @@
 
 import {RxAdapter} from './reactive-streams'
-import { map, tap } from 'rxjs/operators';
+import { map, tap, take } from 'rxjs/operators';
 
 type JavaGraal = {
     type: <T>(className: string) => T
@@ -8,20 +8,22 @@ type JavaGraal = {
 
 declare const Java: JavaGraal;
 
-const Flux: any = Java.type('reactor.core.publisher.Flux');
-const Duration: any = Java.type('java.time.Duration');
+const ReactiveService: any = Java.type('com.example.demo.DemoApplication');
 const GraalPublisherAdapter: any = Java.type('reactivestreams.graal.interop.GraalPublisherAdapter');
 
-const observablePublisher = RxAdapter.toObservable(new GraalPublisherAdapter(Flux.interval(Duration.ofSeconds(1)).take(20)), 16);
+const observablePublisher = RxAdapter.toObservable(new GraalPublisherAdapter(new ReactiveService().doWork()), 16);
 
 observablePublisher
 .pipe(
     tap(() => {
-        
-    })
+    }),
+    take(10)
 )
 .subscribe(
     console.log,
     console.log,
     console.log 
 );
+
+
+setTimeout(() => {}, 999999999);

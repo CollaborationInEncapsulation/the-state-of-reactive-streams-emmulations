@@ -14,18 +14,21 @@ const runnableAction = () => {
     requestAnimation(request[0]),
     race(
       awaitAnimation(server.toArray()),
-      range(0, ELEMENTS_COUNT).pipe(
+      // Generate Items
+      range(0, ELEMENTS_COUNT).pipe( 
         flatMap(() => {
           const el = $('<div class="stretched el"></div>').appendTo(responseContent)[0];
-
-          return concat(modelAnimation(el), of(el));
+          
+          // the async item's generation process
+          return concat(modelAnimation(el), of(el)); 
         }, 1),
       )
     ).pipe(
-      flatMap((el) => concat(responseAnimation(el), of(el)), NETWORK_THROUGHPUT),
-      tap((e) => {
-        increaseMemoryUsage()
-      }),
+      // network latency simmulation with limited bandwidth
+      flatMap((el) => concat(responseAnimation(el), of(el)), NETWORK_THROUGHPUT), 
+      // Memory Control
+      tap((e) => increaseMemoryUsage()),
+      // Animated Filtering Process
       flatMap(el => {
         const shouldFilter = Math.random() >= 0.5;
 

@@ -4,7 +4,7 @@ import RSocketWebSocketClient from "rsocket-websocket-client";
 
 export default () => {
     const client = new RSocketClient({
-        transport: new RSocketWebSocketClient(
+        transport: new RSocketTC(
             {
                 url: 'ws://localhost:8085',
             },
@@ -27,7 +27,9 @@ export default () => {
                 metadata: ""
             })
             .subscribe({
-                onSubscribe: s => s.request(10),
+                onSubscribe: s => {
+                    (window as any).subscriptionMy = s;
+                },
                 onNext: (p) => console.log("Got response", p),
                 onError: (e) => console.error(e),
                 onComplete: () => console.log("Done")

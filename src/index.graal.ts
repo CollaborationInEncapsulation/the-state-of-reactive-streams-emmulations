@@ -23,7 +23,7 @@ observablePublisher
     take(10)
 )
 .subscribe(
-    console.log,
+    (element) => console.log("I got element in node from Java :" + element),
     console.log,
     console.log 
 );

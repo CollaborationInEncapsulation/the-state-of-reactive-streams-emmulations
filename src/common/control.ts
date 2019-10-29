@@ -14,9 +14,9 @@ controlButton.on('click', () => {
     }
 });
 
-speedometerLabel.text(`Скорость: ${speedometer.val()}`)
+speedometerLabel.text(`Velocity: ${speedometer.val()}`)
 speedometer.on('change', () => {
     const speed = parseFloat(speedometer.val() as string);
-    speedometerLabel.text(`Скорость: ${speed}`)
+    speedometerLabel.text(`Velocity: ${speed}`)
     changeAnimationSpeed(speed)
 })

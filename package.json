@@ -16,7 +16,15 @@
     "jquery": "3.4.1",
     "@types/jquery": "3.3.1",
     "rxjs": "6.5.2",
-    "reactor-core-js": "0.5.0"
+    "reactor-core-js": "0.5.0",
+    "rsocket-core": "0.0.16",
+    "rsocket-flowable": "0.0.14",
+    "rsocket-websocket-client": "0.0.16",
+    "rsocket-websocket-server": "0.0.16",
+    "@types/rsocket-core": "0.0.2",
+    "@types/rsocket-flowable": "0.0.2",
+    "@types/rsocket-websocket-client": "0.0.2",
+    "@types/rsocket-websocket-server": "0.0.1"
   },
   "devDependencies": {
     "webpack": "^4.35.2",

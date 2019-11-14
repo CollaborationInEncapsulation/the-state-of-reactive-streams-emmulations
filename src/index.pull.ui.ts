@@ -44,7 +44,7 @@ const runnableAction = () => {
         }
 
         events.length = 0;
-    }, 1);
+    }, 500);
 }
 
 export default runnableAction;

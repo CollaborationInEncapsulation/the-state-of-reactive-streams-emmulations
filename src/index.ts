@@ -1,4 +1,4 @@
-import runnableAction from './index.one';
+import runnableAction from './index.pull.ui';
 // import './common/control';
 
 

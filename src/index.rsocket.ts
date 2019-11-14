@@ -4,7 +4,7 @@ import RSocketWebSocketClient from "rsocket-websocket-client";
 
 export default () => {
     const client = new RSocketClient({
-        transport: new RSocketTC(
+        transport: new RSocketWebSocketClient(
             {
                 url: 'ws://localhost:8085',
             },

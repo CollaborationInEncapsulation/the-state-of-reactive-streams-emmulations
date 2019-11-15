@@ -13,10 +13,10 @@ const runnableAction = () => {
         isDragging = true
         offsetX = e.offsetX;
         offsetY = e.offsetY;
-    }    
+    };
     const onMouseUp = (e: JQuery.Event) => {
         isDragging = false
-    }
+    };
     const onMouseMove = (e: JQuery.Event) => {
         if (!isDragging) {
             return;
@@ -26,7 +26,7 @@ const runnableAction = () => {
             top: e.clientY - offsetY,
             left: e.clientX - offsetX
         })
-    }
+    };
 
     let isDragging = false;
     let offsetX = 0;
@@ -45,7 +45,7 @@ const runnableAction = () => {
 
         events.length = 0;
     }, 500);
-}
+};
 
 export default runnableAction;
 
@@ -72,4 +72,4 @@ const init = (box: JQuery<HTMLElement>) => {
     box.mousedown((e) => events.push(e));
     $(window).mouseup((e) => events.push(e));
     $(window).mousemove((e) => events.push(e))
-}
+};

@@ -14,7 +14,7 @@ export const requestAnimation = (element: AnimeTarget, n?: number) => {
         if (n && element instanceof HTMLElement) {
             element.innerText = n + "";
         }
-        
+
         return anime.timeline({
                 targets: element,
                 easing,

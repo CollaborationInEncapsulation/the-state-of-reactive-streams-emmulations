@@ -26,7 +26,7 @@ $('body').prepend(`
     </div>
     ${ MEMORY_CAPACITY != Infinity 
       ? `
-        <div class="memory-label">Память</div>
+        <div class="memory-label">Memory</div>
         <div class="memory"></div>
       `
       : ``

@@ -6,7 +6,7 @@ import Subscriber from './Subscriber';
 
 
 
-class ObservablePublisher<T> implements Subscribable<T>, InteropObservable<T>{
+class ObservablePublisher<T> implements Subscribable<T>, InteropObservable<T> {
     [Symbol.observable]: () => Subscribable<T>;
     _subscription: Subscription;
     _source: Publisher<T>;

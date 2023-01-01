@@ -27,12 +27,12 @@
     "@types/rsocket-websocket-server": "0.0.1"
   },
   "devDependencies": {
-    "webpack": "^4.35.2",
+    "webpack": "^5.75.0",
     "webpack-dev-server": "^3.7.2",
-    "webpack-cli": "3.3.6",
-    "html-webpack-plugin": "^3.2.0",
-    "copy-webpack-plugin": "5.0.3",
-    "ts-loader": "6.0.4",
+    "webpack-cli": "5.0.1",
+    "html-webpack-plugin": "^5.5.0",
+    "copy-webpack-plugin": "11.0.0",
+    "ts-loader": "9.4.2",
     "typescript": "3.4.3"
   }
 }

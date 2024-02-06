@@ -1,47 +1,80 @@
-import * as $ from 'jquery';
-import { Flux, Mono } from 'reactor-core-js/flux';
-import { Publisher, Subscription, Subscriber, } from 'reactor-core-js/reactive-streams-spec';
-import { requestAnimation, awaitAnimation, modelAnimation, responseAnimation, peekAnimation, filterAnimation, } from './common/animations';
-import { startTimer, increaseMemoryUsage, decreaseMemoryUsage, increaseProcessedElementsCount } from './common/statistic';
-import { request, server, responseContent } from './common/elements';
-import { defer, of, concat, Observable, merge } from 'rxjs';
-import { Subscriber as RxSubscriber } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { ELEMENTS_TO_FIND, MEMORY_CAPACITY, NETWORK_LATENCY, ELEMENT_PROCESSING_TIME } from './common/constants';
+import * as $ from "jquery";
+import { Flux, Mono } from "reactor-core-js/flux";
+import {
+  Publisher,
+  Subscriber,
+  Subscription,
+} from "reactor-core-js/reactive-streams-spec";
+import {
+  Observable, Observer, Subscriber as RxSubscriber,
+  Subscription as RxSubscription, concat, defer, merge, of
+} from "rxjs";
+import { tap } from "rxjs/operators";
+import {
+  filterAnimation,
+  modelAnimation,
+  peekAnimation,
+  requestAnimation,
+  responseAnimation
+} from "./common/animations";
+import {
+  ELEMENTS_TO_FIND,
+  ELEMENT_PROCESSING_TIME,
+  MEMORY_CAPACITY,
+  NETWORK_LATENCY,
+} from "./common/constants";
+import { request, responseContent } from "./common/elements";
+import {
+  decreaseMemoryUsage,
+  increaseMemoryUsage,
+  increaseProcessedElementsCount,
+  startTimer,
+} from "./common/statistic";
 
 const runnableAction = () => {
   const timerStopper = startTimer();
 
   Flux.from(new BackendAnimationPublisher())
-    .lift(s => new DeliverResponseAnimationSubscriber(s))
-    .lift(s => new DeliverRequestAnimationSubscriber(s))
+    .lift((s) => new DeliverResponseAnimationSubscriber(s))
+    .lift((s) => new DeliverRequestAnimationSubscriber(s))
     .doOnNext((e) => {
-      increaseMemoryUsage()
+      increaseMemoryUsage();
     })
-    .lift<Object>(s => new PublishOnSubscriber(s, false, MEMORY_CAPACITY, Math.ceil(5 * MEMORY_CAPACITY * (ELEMENT_PROCESSING_TIME / NETWORK_LATENCY))))
-    .flatMap(el => {
-      const shouldFilter = Math.random() >= 0.5;
+    .lift<Object>(
+      (s) =>
+        new PublishOnSubscriber(
+          s,
+          false,
+          MEMORY_CAPACITY,
+          Math.ceil(
+            5 * MEMORY_CAPACITY * (ELEMENT_PROCESSING_TIME / NETWORK_LATENCY)
+          )
+        )
+    )
+    .flatMap(
+      (el) => {
+        const shouldFilter = Math.random() >= 0.5;
 
-      if (shouldFilter) {
-        return new ObservableToMonoPublisher(concat(
-          merge(
-            peekAnimation(el),
-            filterAnimation(el),
-          ),
-          defer(decreaseMemoryUsage),
-        ));
-      } else {
-        return new ObservableToMonoPublisher(concat(
-          peekAnimation(el),
-          defer(decreaseMemoryUsage),
-          of(el),
-        ));
-      }
-    }, false, 1, Infinity)
+        if (shouldFilter) {
+          return new ObservableToMonoPublisher(
+            concat(
+              merge(peekAnimation(el), filterAnimation(el)),
+              defer(decreaseMemoryUsage)
+            )
+          );
+        } else {
+          return new ObservableToMonoPublisher(
+            concat(peekAnimation(el), defer(decreaseMemoryUsage), of(el))
+          );
+        }
+      },
+      false,
+      1,
+      Infinity
+    )
     .lift((s) => new TakeSubscriber(s, ELEMENTS_TO_FIND))
     .consume(increaseProcessedElementsCount, timerStopper, timerStopper);
 };
-
 
 class BackendAnimationPublisher implements Publisher<Object> {
   subscribe<S extends Object>(s: Subscriber<S>): void {
@@ -49,20 +82,21 @@ class BackendAnimationPublisher implements Publisher<Object> {
   }
 }
 
-class BackendAnimationSubscription extends RxSubscriber<Object> implements Subscription {
-
+class BackendAnimationSubscription implements Observer<any>, Subscription {
   private requested: number = 0;
   private animation = defer(() => {
-    const el = $('<div class="stretched el"></div>').appendTo(responseContent)[0];
+    const el = $('<div class="stretched el"></div>').appendTo(
+      responseContent
+    )[0];
     return concat(modelAnimation(el), of(el));
   });
+  private isStopped: boolean = false;
+  private upstream: RxSubscription | null;
 
-  constructor(private actual: Subscriber<Object>) {
-    super();
-  }
+  constructor(private actual: Subscriber<Object>) {}
 
   next(el: Object) {
-    this.actual.onNext(el)
+    this.actual.onNext(el);
   }
 
   complete() {
@@ -70,10 +104,20 @@ class BackendAnimationSubscription extends RxSubscriber<Object> implements Subsc
       const { animation, requested } = this;
       this.requested = requested - 1;
       if (requested === 1) {
+        this.upstream = null;
         return;
       }
-      animation.subscribe(this._unsubscribeAndRecycle());
+      this.upstream = animation.subscribe(this);
     }
+  }
+
+  error(ex: Error) {
+    if (this.isStopped) {
+      return;
+    }
+
+    this.isStopped = true;
+    this.actual.onError(ex);
   }
 
   request(n: number): void {
@@ -89,24 +133,34 @@ class BackendAnimationSubscription extends RxSubscriber<Object> implements Subsc
       return;
     }
 
-    this.animation.subscribe(this._unsubscribeAndRecycle());
+    this.upstream = this.animation.subscribe(this);
   }
 
   cancel(): void {
-    this.unsubscribe();
+    if (this.isStopped) {
+      return;
+    }
+
+    this.isStopped = true;
+    if (this.upstream) {
+      this.upstream.unsubscribe();
+    }
   }
 }
 
-class DeliverRequestAnimationSubscriber implements Subscriber<Object>, Subscription {
-
+class DeliverRequestAnimationSubscriber
+  implements Subscriber<Object>, Subscription
+{
   private s: Subscription;
   private requests = request.toArray();
   private animation = (n: number) => {
     const el = this.requests.shift();
-    return requestAnimation(el, n).pipe(tap(null, null, () => this.requests.unshift(el)));
+    return requestAnimation(el, n).pipe(
+      tap(null, null, () => this.requests.unshift(el))
+    );
   };
 
-  constructor(private actual: Subscriber<Object>) { }
+  constructor(private actual: Subscriber<Object>) {}
 
   onSubscribe(s: Subscription): void {
     this.s = s;
@@ -123,18 +177,20 @@ class DeliverRequestAnimationSubscriber implements Subscriber<Object>, Subscript
   }
   request(n: number): void {
     this.animation(n).subscribe({
-      complete: () => this.s.request(n)
-    })
+      complete: () => this.s.request(n),
+    });
   }
   cancel(): void {
     this.s.cancel();
   }
 }
 
-class DeliverResponseAnimationSubscriber implements Subscriber<Object>, Subscription {
+class DeliverResponseAnimationSubscriber
+  implements Subscriber<Object>, Subscription
+{
   private s: Subscription;
 
-  constructor(private actual: Subscriber<Object>) { }
+  constructor(private actual: Subscriber<Object>) {}
 
   onSubscribe(s: Subscription): void {
     this.s = s;
@@ -142,7 +198,7 @@ class DeliverResponseAnimationSubscriber implements Subscriber<Object>, Subscrip
   }
   onNext(t: Object): void {
     responseAnimation(t).subscribe({
-      complete: () => this.actual.onNext(t)
+      complete: () => this.actual.onNext(t),
     });
   }
   onError(t: Error): void {
@@ -170,18 +226,21 @@ class PublishOnSubscriber<T> implements Subscriber<T>, Subscription {
   private requested: number;
   private produced: number;
 
-  constructor(private actual: Subscriber<T>, private delayError: boolean, private prefetch: number, lowTide: number) {
+  constructor(
+    private actual: Subscriber<T>,
+    private delayError: boolean,
+    private prefetch: number,
+    lowTide: number
+  ) {
     this.requested = 0;
     this.wip = 0;
     this.produced = 0;
 
     if (lowTide <= 0) {
       this.limit = prefetch;
-    }
-    else if (lowTide >= prefetch) {
-      this.limit = prefetch == Infinity ? Infinity : (prefetch - (prefetch >> 2));
-    }
-    else {
+    } else if (lowTide >= prefetch) {
+      this.limit = prefetch == Infinity ? Infinity : prefetch - (prefetch >> 2);
+    } else {
       this.limit = prefetch == Infinity ? Infinity : lowTide;
     }
   }
@@ -233,8 +292,8 @@ class PublishOnSubscriber<T> implements Subscriber<T>, Subscription {
     // setImmediate(() => this.drain());
     this.drain();
   }
-  checkTerminated(d: boolean, empty:boolean): boolean {
-    const {cancelled, buffer, delayError, error, actual} = this;
+  checkTerminated(d: boolean, empty: boolean): boolean {
+    const { cancelled, buffer, delayError, error, actual } = this;
     if (cancelled) {
       buffer.length = 0;
       return true;
@@ -244,20 +303,17 @@ class PublishOnSubscriber<T> implements Subscriber<T>, Subscription {
         if (empty) {
           if (error) {
             actual.onError(error);
-          }
-          else {
+          } else {
             actual.onComplete();
           }
           return true;
         }
-      }
-      else {
+      } else {
         if (error) {
           buffer.length = 0;
           actual.onError(error);
           return true;
-        }
-        else if (empty) {
+        } else if (empty) {
           actual.onComplete();
           return true;
         }
@@ -271,9 +327,8 @@ class PublishOnSubscriber<T> implements Subscriber<T>, Subscription {
     let { produced, requested, done, error } = this;
     let missed = 1;
 
-    for (; ;) {
+    for (;;) {
       while (produced != requested) {
-
         if (this.cancelled) {
           return;
         }
@@ -309,8 +364,7 @@ class PublishOnSubscriber<T> implements Subscriber<T>, Subscription {
         if (error != null) {
           actual.onError(error);
           return;
-        }
-        else {
+        } else {
           actual.onComplete();
           return;
         }
@@ -321,8 +375,7 @@ class PublishOnSubscriber<T> implements Subscriber<T>, Subscription {
         this.produced = produced;
         this.wip = 0;
         return;
-      }
-      else {
+      } else {
         requested = this.requested;
         done = this.done;
         error = this.error;
@@ -333,12 +386,11 @@ class PublishOnSubscriber<T> implements Subscriber<T>, Subscription {
 }
 
 class TakeSubscriber<T> implements Subscriber<T>, Subscription {
-
   private once: boolean;
   private done: boolean;
   private s: Subscription;
 
-  constructor(private actual: Subscriber<T>, private remaining: number) { }
+  constructor(private actual: Subscriber<T>, private remaining: number) {}
 
   onSubscribe(s: Subscription) {
     this.s = s;
@@ -370,7 +422,7 @@ class TakeSubscriber<T> implements Subscriber<T>, Subscription {
       actual.onComplete();
       return;
     }
-  };
+  }
 
   onError(t: Error) {
     if (this.done) {
@@ -378,7 +430,7 @@ class TakeSubscriber<T> implements Subscriber<T>, Subscription {
     }
     this.done = true;
     this.actual.onError(t);
-  };
+  }
 
   onComplete() {
     if (this.done) {
@@ -386,7 +438,7 @@ class TakeSubscriber<T> implements Subscriber<T>, Subscription {
     }
     this.done = true;
     this.actual.onComplete();
-  };
+  }
 
   request(n: number) {
     if (!this.once) {
@@ -413,7 +465,10 @@ class ObservableToMonoPublisher<T> extends Mono<T> {
   }
 }
 
-class ObservableToMonoSubscriber<T> extends RxSubscriber<T> implements Subscription {
+class ObservableToMonoSubscriber<T>
+  extends RxSubscriber<T>
+  implements Subscription
+{
   private requested: boolean;
 
   constructor(private source: Observable<T>, private actual: Subscriber<T>) {

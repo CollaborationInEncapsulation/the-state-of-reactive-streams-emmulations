@@ -8,7 +8,9 @@ module.exports = {
     mode: 'development',
     devtool: 'source-map',
     devServer: {
-        contentBase: path.join(__dirname, 'dist'),
+        static: {
+            directory: path.join(__dirname, 'dist'),
+        },
         compress: true,
         port: 9000,
         hot: true
@@ -18,9 +20,11 @@ module.exports = {
             title: 'Reactive-Streams Animations',
             template: path.join(__dirname, 'public/index.html')
         }),
-        new CopyPlugin([
-            { from: './public', to: './' },
-        ]),
+        new CopyPlugin({
+            patterns: [
+                "public/style.css"
+            ]
+        }),
         new webpack.HotModuleReplacementPlugin()
     ],
     module: {

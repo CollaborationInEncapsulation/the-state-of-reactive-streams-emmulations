@@ -1,6 +1,7 @@
 import anime from 'animejs';
 import { timerFace, memoryTracker, elementsCounter } from './elements';
 import { MEMORY_CAPACITY, ELEMENTS_TO_FIND } from './constants';
+import { Observable, EMPTY, throwError } from 'rxjs';
 
 export const startTimer = () => {
     let counter = 0;
@@ -26,16 +27,18 @@ export const increaseMemoryUsage = () => {
         memoryTracker.children().remove("*");
         memoryTracker.html("<span style='display: flex;width: 100%;text-align:center;line-height: 100%;height: 100%;align-content: center;flex-direction: column;justify-content: center;'>Out Of Memory</span>")
 
-        throw new Error("Out Of Memory");
+        return throwError(() => new Error("Out Of Memory"));
     }
 
     memoryTracker.append('<div class="memory-indicator"></div>');
+    return EMPTY;
 }
 
 export const decreaseMemoryUsage = () => {
     if (memoryTracker.children().length) {
         memoryTracker.children().last().remove();
     }
+    return EMPTY;
 }
 
 let processed = 0;
